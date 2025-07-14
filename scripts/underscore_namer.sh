@@ -14,8 +14,8 @@ function rename() {
     for file in "$DIR"/*; do
         if [ -f "$file" ]; then
             # Extracts the basename and removes spaces
-            base_name=$(basename "$file")
-            new_file="${base_name// /_}"
+            local base_name=$(basename "$file")
+            local new_file="${base_name// /_}"
 
             echo "Moving $base_name to $OUT/$new_file..."
             if mv "$file" "$OUT/$new_file"; then
@@ -34,8 +34,8 @@ function rename() {
 function dry() {
     for file in "$DIR"/*; do
         if [ -f "$file" ]; then
-            base_name=$(basename "$file")
-            new_file="${base_name// /_}"
+            local base_name=$(basename "$file")
+            local new_file="${base_name// /_}"
 
             echo "[Dry run] Would move $base_name to $OUT/$new_file"
         else
