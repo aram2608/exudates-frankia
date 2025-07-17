@@ -19,7 +19,7 @@ def main(
     output_dir,
 ):
     """
-    Usage blah blah blah
+    Usage blah blah blah ill do this later
     """
 
     # Convert BGC list to a DataFrame
@@ -34,6 +34,7 @@ def main(
 
 
 def process_file(f, locus_tag_column, bgc_data, output_dir):
+    """Main logic for creating processed files with BGC information appended."""
     output_dir = Path(output_dir)
     try:
         rna_seq_data = pd.read_excel(f, engine="openpyxl")
@@ -75,6 +76,7 @@ def process_file(f, locus_tag_column, bgc_data, output_dir):
 
 
 def extract_bgs(antismash_file):
+    """Main logic for parsing the GenBank file with BGC information."""
     # Parsing the GenBank file to collect BGC data
     bgc_list = []
 
@@ -119,6 +121,7 @@ def extract_bgs(antismash_file):
 
 
 def get_files(path):
+    """Function used to extract files from input directory."""
     if path.is_dir():
         print(f"Extracting files from {path}...")
         files = list(path.glob("*.csv" or "*.xlsx"))
