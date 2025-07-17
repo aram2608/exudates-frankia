@@ -5,16 +5,22 @@ from pathlib import Path
 import pandas as pd
 from Bio import SeqIO
 import typer
-
-# python3 antismah.py RNA_seq.xlsx Locus_Tag NC_007777.gbk
+from typing_extensions import Annotated
+from rich.progress import track
 
 app = typer.Typer()
 
 
 @app.command()
 def main(
-    path, locus_tag_column, antismash_file, output_dir
-):  # Main function to process RNA-seq data and antiSMASH GenBank file
+    path: Annotated[Path, typer.Argument()],
+    locus_tag_column,
+    antismash_file,
+    output_dir,
+):
+    """
+    Usage blah blah blah
+    """
 
     # Convert BGC list to a DataFrame
     bgc_data = extract_bgs(antismash_file)
@@ -22,46 +28,50 @@ def main(
     # Get all files from directory
     files = get_files(path)
 
-    for excel_file in files:
-    # Load the RNA-seq data
-        try:
-            rna_seq_data = pd.read_excel(excel_file, engine="openpyxl")
-        except Exception as e:
-            print(f"Error reading the Excel file {excel_file}: {e}")
-            print("Trying csv instead.")
-            try:
-                rna_seq_data = pd.read_csv(excel_file)
-            except Exception as e:
-                print(f"Error loading as csv, please check {excel_file} file type.\nException: {e}")
+    # Process each file in directory
+    for f in track(files, description="Processing file..."):
+        process_file(f, locus_tag_column, bgc_data, output_dir)
 
-        # Verify if the specified column exists
-        if (
-            locus_tag_column not in rna_seq_data.columns
-        ):  # Check if the locus tag column exists in the RNA-seq data
-            print(
-                f"The specified column '{locus_tag_column}' does not exist in {excel_file}."
-            )
+
+def process_file(f, locus_tag_column, bgc_data, output_dir):
+    output_dir = Path(output_dir)
+    try:
+        rna_seq_data = pd.read_excel(f, engine="openpyxl")
+    except Exception as e:
+        print(f"Error reading the Excel file {f}: {e}")
+        print("Trying csv instead.")
+        try:
+            rna_seq_data = pd.read_csv(f)
+        except Exception as e:
+            print(f"Error loading as csv, please check {f} file type.\nException: {e}")
             return
 
-        # Match the genes based on the specified locus tag column without any significance filter
-        merged_data = pd.merge(
-            rna_seq_data,
-            bgc_data,
-            how="inner",
-            left_on=locus_tag_column,
-            right_on="locus_tag",
-        )
+    # Verify if the specified column exists
+    if locus_tag_column not in rna_seq_data.columns:
+        print(f"The specified column '{locus_tag_column}' does not exist in {f}.")
+        return
 
-        # Export the matched data to an Excel file with "BGC" appended to the file name
-        if not merged_data.empty:
-            output_file = os.path.basename(excel_file)
-            output_file = os.path.splitext(output_file)[0] + "_BGC.csv"
-            os.makedirs(output_dir, exist_ok=True)
-            full_path = os.path.join(output_dir, output_file)
-            merged_data.to_csv(full_path, index=False)
-            print(f"Matched data exported to {full_path}")
-        else:
-            print("No matching genes found.")
+    # Match the genes based on the specified locus tag column without any significance filter
+    merged_data = pd.merge(
+        rna_seq_data,
+        bgc_data,
+        how="inner",
+        left_on=locus_tag_column,
+        right_on="locus_tag",
+    )
+
+    # Export the matched data to an Excel file with "BGC" appended to the file name
+    if not merged_data.empty:
+        f = Path(f)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        out_file = f.stem + "_BGC.csv"
+        full_path = output_dir / out_file
+
+        # Write and report
+        merged_data.to_csv(full_path, index=False)
+        print(f"Matched data exported to {full_path}")
+    else:
+        print("No matching genes found.")
 
 
 def extract_bgs(antismash_file):
@@ -107,10 +117,15 @@ def extract_bgs(antismash_file):
         print("Failed to extract BGC's")
         exit()
 
+
 def get_files(path):
-    folder = Path(path)
-    files = list(folder.glob("*.csv" or "*.xlsx"))
-    return files
+    if path.is_dir():
+        print(f"Extracting files from {path}...")
+        files = list(path.glob("*.csv" or "*.xlsx"))
+        return files
+    else:
+        print(f"{path} is not a directory")
+        exit()
 
 
 if __name__ == "__main__":
