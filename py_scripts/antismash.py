@@ -1,4 +1,3 @@
-import os
 from sys import exit
 from pathlib import Path
 
