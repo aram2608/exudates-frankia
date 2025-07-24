@@ -17,7 +17,7 @@ def excel_to_csv(input_dir: Annotated[Path, typer.Argument()], output_dir):
     for f in track(files, description="Converting to csv..."):
         excel = Path(f)
         # Read the Excel file
-        df = pd.read_excel(f, engine="openpyxl")
+        df = pd.read_excel(f)
 
         csv = excel.stem + ".csv"
         out = output / csv

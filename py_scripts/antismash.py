@@ -37,7 +37,7 @@ def process_file(f, locus_tag_column, bgc_data, output_dir, tsv):
     """Main logic for creating processed files with BGC information appended."""
     output_dir = Path(output_dir)
     try:
-        rna_seq_data = pd.read_excel(f, engine="openpyxl")
+        rna_seq_data = pd.read_excel(f)
     except Exception as e:
         print(f"Error reading the Excel file {f}: {e}")
         try:
