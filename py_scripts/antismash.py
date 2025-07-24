@@ -16,6 +16,7 @@ def main(
     locus_tag_column,
     antismash_file,
     output_dir,
+    tsv: bool = False,
 ):
     """
     Usage blah blah blah ill do this later
@@ -29,19 +30,23 @@ def main(
 
     # Process each file in directory
     for f in track(files, description="Processing file..."):
-        process_file(f, locus_tag_column, bgc_data, output_dir)
+        process_file(f, locus_tag_column, bgc_data, output_dir, tsv)
 
 
-def process_file(f, locus_tag_column, bgc_data, output_dir):
+def process_file(f, locus_tag_column, bgc_data, output_dir, tsv):
     """Main logic for creating processed files with BGC information appended."""
     output_dir = Path(output_dir)
     try:
         rna_seq_data = pd.read_excel(f, engine="openpyxl")
     except Exception as e:
         print(f"Error reading the Excel file {f}: {e}")
-        print("Trying csv instead.")
         try:
-            rna_seq_data = pd.read_csv(f)
+            if tsv:
+                print("Trying tsv instead.")
+                rna_seq_data = pd.read_csv(f, delimiter="\t")
+            else:
+                print("Trying csv instead.")
+                rna_seq_data = pd.read_csv(f)
         except Exception as e:
             print(f"Error loading as csv, please check {f} file type.\nException: {e}")
             return
@@ -123,7 +128,8 @@ def get_files(path):
     """Function used to extract files from input directory."""
     if path.is_dir():
         print(f"Extracting files from {path}...")
-        files = list(path.glob("*.csv" or "*.xlsx"))
+        exts = ("*.csv", "*.xlsx", "*.tsv")
+        files = [p for pat in exts for p in path.glob(pat)]
         return files
     else:
         print(f"{path} is not a directory")
