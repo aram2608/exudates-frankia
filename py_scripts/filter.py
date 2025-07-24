@@ -36,7 +36,7 @@ def filter_(files, p_value_col, fold_change_col, output_dir, split):
     output_dir = Path(output_dir)
     for f in track(files, description="Filtering..."):
         try:
-            df = pd.read_excel(f)
+            df = pd.read_excel(f, engine="openpyxl")
         except Exception as e:
             print(f"Error reading the Excel file {f}: {e}")
             print("Trying csv instead.")

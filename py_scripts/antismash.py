@@ -1,5 +1,6 @@
 from sys import exit
 from pathlib import Path
+from time import sleep
 
 import pandas as pd
 from Bio import SeqIO
@@ -37,7 +38,7 @@ def process_file(f, locus_tag_column, bgc_data, output_dir, tsv):
     """Main logic for creating processed files with BGC information appended."""
     output_dir = Path(output_dir)
     try:
-        rna_seq_data = pd.read_excel(f)
+        rna_seq_data = pd.read_excel(f, engine="openpyxl")
     except Exception as e:
         print(f"Error reading the Excel file {f}: {e}")
         try:
@@ -77,6 +78,8 @@ def process_file(f, locus_tag_column, bgc_data, output_dir, tsv):
         print(f"Matched data exported to {full_path}")
     else:
         print("No matching genes found.")
+    
+    sleep(0.25)
 
 
 def extract_bgs(antismash_file):
