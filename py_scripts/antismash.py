@@ -17,6 +17,7 @@ def main(
     locus_tag_column,
     antismash_file,
     output_dir,
+    excel: bool = False,
     tsv: bool = False,
 ):
     """
@@ -31,22 +32,25 @@ def main(
 
     # Process each file in directory
     for f in track(files, description="Processing file..."):
-        process_file(f, locus_tag_column, bgc_data, output_dir, tsv)
+        process_file(f, locus_tag_column, bgc_data, output_dir, excel, tsv)
 
 
-def process_file(f, locus_tag_column, bgc_data, output_dir, tsv):
+def process_file(f, locus_tag_column, bgc_data, output_dir, excel, tsv):
     """Main logic for creating processed files with BGC information appended."""
     output_dir = Path(output_dir)
-    try:
-        rna_seq_data = pd.read_excel(f, engine="openpyxl")
-    except Exception as e:
-        print(f"Error reading the Excel file {f}: {e}")
+    if excel:
+        try:
+            print("Loading excel...")
+            rna_seq_data = pd.read_excel(f, engine="openpyxl")
+        except Exception as e:
+            print(f"Error reading the Excel file {f}: {e}")
+    else:
         try:
             if tsv:
-                print("Trying tsv instead.")
+                print("Loading tsv...")
                 rna_seq_data = pd.read_csv(f, delimiter="\t")
             else:
-                print("Trying csv instead.")
+                print("Loading csv...")
                 rna_seq_data = pd.read_csv(f)
         except Exception as e:
             print(f"Error loading as csv, please check {f} file type.\nException: {e}")
@@ -78,7 +82,7 @@ def process_file(f, locus_tag_column, bgc_data, output_dir, tsv):
         print(f"Matched data exported to {full_path}")
     else:
         print("No matching genes found.")
-    
+
     sleep(0.25)
 
 
